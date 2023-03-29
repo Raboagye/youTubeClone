@@ -1,58 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import React, { useEffect, useState } from 'react'
+import { Container } from 'react-bootstrap'
+import Header from './Components/Header/Header'
+import HomeScreen from './Screens/HomeScreen'
+import Sidebar from './Components/Sidebar/Sidebar'
+import "./_app.scss"
+import LoginScreen from './Screens/LoginScreen/LoginScreen'
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { useSelector } from 'react-redux'
 
-function App() {
+
+const Layout = ({children}) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
+    <div>
+      <Header sidebarOpen={() => setSidebarOpen(!sidebarOpen)} />
+      <div className="app__container">
+        <Sidebar sidebar={sidebarOpen} hideNavBar={() => setSidebarOpen(false)} />
+        <Container className="app__main" >
+            {children}
+        </Container>
+      </div>
+
     </div>
-  );
+  )
 }
 
-export default App;
+
+const App = () => {
+  const navigate = useNavigate()
+  
+  const {accessToken, loading} = useSelector((state)=>state.user)
+
+  useEffect(() => {
+    if(!loading  && !accessToken) {
+      navigate("/auth")
+    }
+  }, [accessToken, loading])
+
+  return (
+    <Routes>
+      <Route exact path="/" element={
+        <Layout>
+          <HomeScreen />
+        </Layout>}
+      />
+      <Route path="/search" element={
+        <Layout>
+          <h4>This is the search page</h4>
+        </Layout>}
+      />
+      <Route path="/auth" element={<LoginScreen />} />
+      <Route path="/*" element={<Navigate to="/" />} />
+    </Routes>
+
+  )
+}
+
+export default App
